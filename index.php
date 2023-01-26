@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 require_once('connection/connection.php');
 
-define('INTERVALO',3);
+define('INTERVALO', 3);
 
 // totalArtigos = 7
 // numPaginas = arredondar para cima(totalArtigos / INTERVALO)
@@ -13,20 +13,26 @@ define('INTERVALO',3);
 // 2 - limite=3&offset=3
 // 3 - limite=3&offset=6
 
-$qArtigos = "SELECT idArtigo,tituloArtigo,textoArtigo,dataArtigo FROM artigos ORDER BY dataArtigo DESC LIMIT ?";
+$qArtigos = "SELECT idArtigo,tituloArtigo,textoArtigo,dataArtigo FROM artigos ORDER BY dataArtigo DESC LIMIT ? OFFSET ?";
 $stmtArtigos = $conn->prepare($qArtigos);
 if ($stmtArtigos === FALSE) {
     die("Erro no SQL: " . $qArtigos . " Error: " . $conn->error);
 }
-if (isset($_GET['numArtigos']) && $_GET['numArtigos'] != "") {
-    $numArtigos = $_GET['numArtigos'];
+if (isset($_GET['offset']) && $_GET['offset'] != "") {
+    $offset = $_GET['offset'];
 } else {
-    $numArtigos = INTERVALO;
+    $offset = 0;
 }
-$stmtArtigos->bind_param('i',$numArtigos);
+// $offset=0;
+$numArtigos = INTERVALO;
+$stmtArtigos->bind_param('ii', $numArtigos,$offset);
 $stmtArtigos->execute();
 $stmtArtigos->store_result();
 $totalArtigos = $stmtArtigos->num_rows;
+// como exemplo, podemos fazer um select count(*) para verificar o número de artigos
+$contaTotalArtigos = 7;
+$quantasPaginas = ceil($contaTotalArtigos / INTERVALO);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,9 +49,9 @@ $totalArtigos = $stmtArtigos->num_rows;
     <div class="container">
         <h1>BLOG</h1>
         <h2>Artigos</h2>
-        <?php 
-            $stmtArtigos->bind_result($idArtigo,$tituloArtigo,$textoArtigo,$dataArtigo);
-            while ($stmtArtigos->fetch()) { 
+        <?php
+        $stmtArtigos->bind_result($idArtigo, $tituloArtigo, $textoArtigo, $dataArtigo);
+        while ($stmtArtigos->fetch()) {
         ?>
             <div class="card">
                 <div class="card-header">
@@ -54,17 +60,31 @@ $totalArtigos = $stmtArtigos->num_rows;
                 <div class="card-body">
                     <blockquote class="blockquote mb-0">
                         <p><?= $tituloArtigo ?></p>
-                        <footer class="blockquote-footer"><?= substr($textoArtigo,0,250) ?>......</footer>
+                        <footer class="blockquote-footer"><?= substr($textoArtigo, 0, 250) ?>......</footer>
                     </blockquote>
                 </div>
             </div>
             <br>
         <?php } ?>
         <?php
-            if ($numArtigos <= $totalArtigos) {
+        if ($numArtigos <= $totalArtigos) {
         ?>
-        <a href="index.php?numArtigos=<?= $numArtigos+INTERVALO ?>" class="btn btn-primary">Carregar mais artigos...</a>
-        <?php } else { echo "<h3>Chegou ao final dos artigos!</h3>"; }?>
+            <a href="index.php?numArtigos=<?= $numArtigos + INTERVALO ?>" class="btn btn-primary">Carregar mais artigos...</a>
+        <?php } else {
+            echo "<h3>Chegou ao final dos artigos!</h3>";
+        } ?>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <?php 
+                    $offsetLink = 0;
+                    for($i=1; $i<=$quantasPaginas; $i++) { ?>
+                        <li class="page-item"><a class="page-link" href="index.php?offset=<?= $offsetLink ?>"><?= $i ?></a></li>
+                  <?php  
+                    $offsetLink += INTERVALO;
+                    } ?>
+                
+            </ul>
+        </nav>
     </div>
     <?php
     $stmtArtigos->close();
