@@ -5,15 +5,28 @@ error_reporting(E_ALL);
 
 require_once('connection/connection.php');
 
-$qArtigos = "SELECT idArtigo,tituloArtigo,textoArtigo,dataArtigo FROM artigos ORDER BY dataArtigo DESC";
+define('INTERVALO',3);
+
+// totalArtigos = 7
+// numPaginas = arredondar para cima(totalArtigos / INTERVALO)
+// 1 - limite=3&offset=0
+// 2 - limite=3&offset=3
+// 3 - limite=3&offset=6
+
+$qArtigos = "SELECT idArtigo,tituloArtigo,textoArtigo,dataArtigo FROM artigos ORDER BY dataArtigo DESC LIMIT ?";
 $stmtArtigos = $conn->prepare($qArtigos);
 if ($stmtArtigos === FALSE) {
     die("Erro no SQL: " . $qArtigos . " Error: " . $conn->error);
 }
+if (isset($_GET['numArtigos']) && $_GET['numArtigos'] != "") {
+    $numArtigos = $_GET['numArtigos'];
+} else {
+    $numArtigos = INTERVALO;
+}
+$stmtArtigos->bind_param('i',$numArtigos);
 $stmtArtigos->execute();
 $stmtArtigos->store_result();
-$numArtigos = $stmtArtigos->num_rows;
-
+$totalArtigos = $stmtArtigos->num_rows;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,6 +60,11 @@ $numArtigos = $stmtArtigos->num_rows;
             </div>
             <br>
         <?php } ?>
+        <?php
+            if ($numArtigos <= $totalArtigos) {
+        ?>
+        <a href="index.php?numArtigos=<?= $numArtigos+INTERVALO ?>" class="btn btn-primary">Carregar mais artigos...</a>
+        <?php } else { echo "<h3>Chegou ao final dos artigos!</h3>"; }?>
     </div>
     <?php
     $stmtArtigos->close();
