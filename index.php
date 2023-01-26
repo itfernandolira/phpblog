@@ -53,7 +53,7 @@ $totalArtigos = $stmtArtigos->num_rows;
                 </div>
                 <div class="card-body">
                     <blockquote class="blockquote mb-0">
-                        <p><?= $tituloArtigo ?></p>
+                        <p><a href="artigos.php?idArtigo=<?= $idArtigo ?>"><?= $tituloArtigo ?></a></p>
                         <footer class="blockquote-footer"><?= substr($textoArtigo,0,250) ?>......</footer>
                     </blockquote>
                 </div>
