@@ -10,6 +10,20 @@ if (!isset($_SESSION['utilizador'])) {
     header("Location: login.php");
 }
 
+if (isset($_POST['acao']) && $_POST['acao']=='update') {
+    $sqlArtigo = "UPDATE artigos SET tituloArtigo = ?, textoArtigo = ? WHERE idArtigo=?";
+    $stmtDelArtigo = $conn->prepare($sqlArtigo);
+    if ($stmtDelArtigo === FALSE) {
+        die("Erro no SQL: " . $sqlArtigo . " Error: " . $conn->error);
+    }
+    $idArtigo = $_POST['idUpdate'];
+    $titulo = $_POST['tituloUpdate'];
+    $texto = $_POST['textoUpdate'];
+    $stmtDelArtigo->bind_param('ssi', $titulo, $texto, $idArtigo);
+    $stmtDelArtigo->execute();
+    $stmtDelArtigo->close();
+}
+
 if (isset($_POST['acao']) && $_POST['acao']=='apagar') {
     $sqlArtigo = "DELETE FROM artigos WHERE idArtigo=?";
     $stmtDelArtigo = $conn->prepare($sqlArtigo);
@@ -64,6 +78,7 @@ $stmtArtigos->execute();
                     <th scope="col">Título</th>
                     <th scope="col">Data</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -84,20 +99,47 @@ $stmtArtigos->execute();
                                 <button type="submit" class="btn btn-primary">Apagar</button>
                             </form>
                         </td>
+                        <td>
+                            <form action="index.php" method="POST">
+                                <div class="mb-3">
+                                    <input type="hidden" class="form-control" id="acao" name="acao" value="editar">
+                                    <input type="hidden" class="form-control" id="idartigo" name="idartigo" value="<?= $idArtigo ?>">
+                                    <input type="hidden" class="form-control" id="editTitulo" name="editTitulo" value="<?= $tituloArtigo ?>">
+                                    <input type="hidden" class="form-control" id="editTexto" name="editTexto" value="<?= $textoArtigo ?>">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Editar</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php } ?>
             </tbody>
         </table>
         <hr>
+        <?php  if (!isset($_POST['acao']) || (isset($_POST['acao']) && $_POST['acao'] != 'editar')) { ?>
+            <form action="index.php" method="POST">
+                <div class="mb-3">
+                    <label for="titulo" class="form-label">Título</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo">
+                    <label for="texto" class="form-label">Texto</label>
+                    <input type="text" class="form-control" id="texto" name="texto">
+                </div>
+                <button type="submit" class="btn btn-primary">Adicionar artigo</button>
+            </form>
+        <?php } ?>
+        <?php  if (isset($_POST['acao']) && $_POST['acao']=="editar") { ?>
+        <hr>
         <form action="index.php" method="POST">
             <div class="mb-3">
                 <label for="titulo" class="form-label">Título</label>
-                <input type="text" class="form-control" id="titulo" name="titulo">
+                <input type="text" class="form-control" id="tituloUpdate" name="tituloUpdate" value="<?= $_POST['editTitulo'] ?>">
                 <label for="texto" class="form-label">Texto</label>
-                <input type="text" class="form-control" id="texto" name="texto">
+                <input type="text" class="form-control" id="textoUpdate" name="textoUpdate" value="<?= $_POST['editTexto'] ?>">
+                <input type="hidden" class="form-control" id="acao" name="acao" value="update">
+                <input type="hidden" class="form-control" id="idUpdate" name="idUpdate" value="<?= $_POST['idartigo'] ?>">
             </div>
-            <button type="submit" class="btn btn-primary">Adicionar artigo</button>
+            <button type="submit" class="btn btn-primary">Editar artigo</button>
         </form>
+        <?php } ?> 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
