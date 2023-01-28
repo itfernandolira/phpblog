@@ -10,15 +10,27 @@ if (!isset($_SESSION['utilizador'])) {
     header("Location: login.php");
 }
 
-if (isset($_POST['titulo']) && $_POST['titulo']!="") {
+if (isset($_POST['acao']) && $_POST['acao']=='apagar') {
+    $sqlArtigo = "DELETE FROM artigos WHERE idArtigo=?";
+    $stmtDelArtigo = $conn->prepare($sqlArtigo);
+    if ($stmtDelArtigo === FALSE) {
+        die("Erro no SQL: " . $sqlArtigo . " Error: " . $conn->error);
+    }
+    $idArtigo = $_POST['idartigo'];
+    $stmtDelArtigo->bind_param('i', $idArtigo);
+    $stmtDelArtigo->execute();
+    $stmtDelArtigo->close();
+}
+
+if (isset($_POST['titulo']) && $_POST['titulo'] != "") {
     $sqlArtigo = "INSERT INTO artigos(tituloArtigo,textoArtigo) VALUES(?,?)";
     $stmtInsArtigo = $conn->prepare($sqlArtigo);
     if ($stmtInsArtigo === FALSE) {
         die("Erro no SQL: " . $sqlArtigo . " Error: " . $conn->error);
     }
-    $titulo=$_POST['titulo'];
-    $texto=$_POST['texto'];
-    $stmtInsArtigo->bind_param('ss',$titulo,$texto);
+    $titulo = $_POST['titulo'];
+    $texto = $_POST['texto'];
+    $stmtInsArtigo->bind_param('ss', $titulo, $texto);
     $stmtInsArtigo->execute();
     $stmtInsArtigo->close();
 }
@@ -51,6 +63,7 @@ $stmtArtigos->execute();
                     <th scope="col">#</th>
                     <th scope="col">Título</th>
                     <th scope="col">Data</th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -62,6 +75,15 @@ $stmtArtigos->execute();
                         <th scope="row"><?= $idArtigo ?></th>
                         <td><?= $tituloArtigo ?></td>
                         <td><?= $dataArtigo ?></td>
+                        <td>
+                            <form action="index.php" method="POST">
+                                <div class="mb-3">
+                                    <input type="hidden" class="form-control" id="acao" name="acao" value="apagar">
+                                    <input type="hidden" class="form-control" id="idartigo" name="idartigo" value="<?= $idArtigo ?>">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Apagar</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php } ?>
             </tbody>
