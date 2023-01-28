@@ -45,11 +45,50 @@ if (isset($_GET['idArtigo']) && $_GET['idArtigo'] != "") {
                 </blockquote>
             </div>
         </div>
+        <br>
+        <div id="status"></div>
+        <form action="artigos.php" method="POST" id="formComentario">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="nome" name="nome">
+                <label for="comentario" class="form-label">Comentário</label>
+                <input type="text" class="form-control" id="comentario" name="comentario">
+                <input type="hidden" class="form-control" id="artigo" name="artigo" value="<?= $_GET['idArtigo'] ?>">
+            </div>
+            <button type="submit" class="btn btn-primary">Comentar</button>
+        </form>
     </div>
     <?php
     $stmtArtigos->close();
     $conn->close();
     ?>
+    <script>
+        const formComentario = document.querySelector('#formComentario');
+
+        formComentario.addEventListener('submit', e => {
+            e.preventDefault();
+            var data = new FormData();
+            data.append("addNome", formComentario.nome.value);
+            data.append("addComentario", formComentario.comentario.value);
+            data.append("addArtigo", formComentario.artigo.value);
+
+            const inserir = async () => {
+                const response = await fetch('http://localhost:4500/jan2023/sessao7/blog/inscoment.php', { method: "POST", body: data })
+                return response.text();
+            }
+
+            inserir()
+                .then(dataResponse => {
+                    // console.log('concluido:', JSON.parse(dataResponse));
+                    const { status } = JSON.parse(dataResponse);
+                    const showStatus = document.querySelector('#status');
+                    showStatus.innerHTML=status;
+                  })
+                .catch( err => {
+                    console.log('erro', err.message);
+                });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
 
