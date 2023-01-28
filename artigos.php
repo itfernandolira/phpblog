@@ -57,6 +57,10 @@ if (isset($_GET['idArtigo']) && $_GET['idArtigo'] != "") {
             </div>
             <button type="submit" class="btn btn-primary">Comentar</button>
         </form>
+        <hr>
+        <div id="lista">
+            <p>A carregar comentários....</p>
+        </div>
     </div>
     <?php
     $stmtArtigos->close();
@@ -88,6 +92,45 @@ if (isset($_GET['idArtigo']) && $_GET['idArtigo'] != "") {
                     console.log('erro', err.message);
                 });
         });
+
+        const url = new URL(location.href);
+        const idArtigo = url.searchParams.get('idArtigo');
+
+        const divLista = document.querySelector('#lista');
+
+        const lista = async () => {
+            const listaResponse = await fetch('http://localhost:4500/jan2023/sessao7/blog/listcoment.php?idArtigo='+idArtigo);
+            return listaResponse.text();
+        }
+
+        setInterval( () => {
+            lista()
+            .then( dataLista => {
+                //console.log(JSON.parse(dataLista));
+                var listahtml="";
+                JSON.parse(dataLista).map( comentario => {
+                    listahtml += `
+                    <div class="card">
+                        <div class="card-header">
+                            Quote
+                        </div>
+                        <div class="card-body">
+                            <blockquote class="blockquote mb-0">
+                            <p>${comentario.comentario}</p>
+                            <footer class="blockquote-footer"><cite title="Source Title">${comentario.nome}</cite></footer>
+                            </blockquote>
+                        </div>
+                        </div>
+                    <br>
+                    `;
+                });
+                divLista.innerHTML=listahtml;
+            })
+            .catch( err => {
+                console.log('erro', err.message);
+            })
+        },3000);
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
