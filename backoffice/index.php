@@ -36,7 +36,7 @@ if (isset($_POST['acao']) && $_POST['acao']=='apagar') {
     $stmtDelArtigo->close();
 }
 
-if (isset($_POST['titulo']) && $_POST['titulo'] != "") {
+if (isset($_POST['acao']) && $_POST['acao']=='inserir') {
     $sqlArtigo = "INSERT INTO artigos(tituloArtigo,textoArtigo) VALUES(?,?)";
     $stmtInsArtigo = $conn->prepare($sqlArtigo);
     if ($stmtInsArtigo === FALSE) {
@@ -122,6 +122,7 @@ $stmtArtigos->execute();
                     <input type="text" class="form-control" id="titulo" name="titulo">
                     <label for="texto" class="form-label">Texto</label>
                     <input type="text" class="form-control" id="texto" name="texto">
+                    <input type="hidden" class="form-control" id="acao" name="acao" value="inserir">
                 </div>
                 <button type="submit" class="btn btn-primary">Adicionar artigo</button>
             </form>
